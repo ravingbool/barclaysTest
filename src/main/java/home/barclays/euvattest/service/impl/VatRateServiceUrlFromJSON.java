@@ -1,16 +1,19 @@
 package home.barclays.euvattest.service.impl;
 
-import home.barclays.euvattest.comparator.VatRateComparatorFactory;
 import home.barclays.euvattest.dao.DataAccessObject;
 import home.barclays.euvattest.domain.RateType;
 import home.barclays.euvattest.service.VatRateService;
-import home.barclays.euvattest.dao.impl.JSONFromUrlDAO;
 import home.barclays.euvattest.domain.VatRate;
 
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
 
 public class VatRateServiceUrlFromJSON implements VatRateService {
 
@@ -21,32 +24,33 @@ public class VatRateServiceUrlFromJSON implements VatRateService {
     }
 
     @Override
-    public List<VatRate> getListOfTheHighestLowestVATCountries(int numberOfItemsToShow, boolean ascending,
-                                                               RateType rateType) {
+    public Map<Double, List<VatRate>> getTheHighestLowestVATCountries(int numberOfItemsToShow, boolean ascending, RateType rateType) {
 
         List<VatRate> list = dao.getAll();
 
         if (list.isEmpty()) {
-            return new ArrayList<>();
+            return new HashMap<>();
         }
 
-        Comparator<VatRate> comparator = VatRateComparatorFactory.getVatRateComparator(rateType);
+        Comparator<Double> comparator = ascending ? Comparator.naturalOrder() : Comparator.reverseOrder();
+        Collector collector = null;
 
-        if (ascending) {
-            list.sort(comparator.reversed());
-        } else {
-            list.sort(comparator);
+        // can be extended later by editing the cases
+        switch (rateType) {
+            case STANDARD:
+                collector = groupingBy(VatRate::getStandardRate);
+            default:
+                collector = groupingBy(VatRate::getStandardRate);
         }
 
-        return list.stream().limit(numberOfItemsToShow).collect(Collectors.toList());
-    }
+        Map<Double, List<VatRate>> groupedByVATRate = (Map<Double, List<VatRate>>) list.stream().collect(collector);
+        List<Double> keys = groupedByVATRate.keySet().stream().sorted(comparator).limit(numberOfItemsToShow).
+                collect(Collectors.toList());
 
-    public DataAccessObject getDao() {
-        return dao;
-    }
+        Map<Double, List<VatRate>> result = new LinkedHashMap<>();
+        keys.forEach(item -> result.put(item, groupedByVATRate.get(item)));
 
-    public void setDao(JSONFromUrlDAO dao) {
-        this.dao = dao;
+        return result;
     }
 
 }

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**a helper class for properties in the app
+/** A helper class for the properties in the app
  *
  * @author Maksim Bulankin
  * */

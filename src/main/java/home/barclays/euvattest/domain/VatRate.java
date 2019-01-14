@@ -1,10 +1,10 @@
 package home.barclays.euvattest.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -12,11 +12,15 @@ import java.util.Objects;
  * some of the fields from source are omitted for brevity
  *
  * @author Maksim Bulankin
- * */
+ */
 public class VatRate extends AbstractEntity {
 
     private String countryName;
-    private List<Period> periods = new ArrayList<>();
+
+    /**
+     * for this test task it is enough to use only a standard rate, but it can be able to add the other rates from the source
+     */
+    private Double standardRate;
 
     public String getCountryName() {
         return countryName;
@@ -27,22 +31,27 @@ public class VatRate extends AbstractEntity {
         this.countryName = countryName;
     }
 
-    public List<Period> getPeriods() {
-        return periods;
+    public Double getStandardRate() {
+        return standardRate;
     }
 
-    public void setPeriods(List<Period> periods) {
-        this.periods = periods;
+    public void setStandardRate(Double standardRate) {
+        this.standardRate = standardRate;
     }
 
-    /**
-     * @return the current valid period for the VAT rate
-     * */
-    public Period getCurrentPeriod() {
-        if (!periods.isEmpty()) {
-            return periods.stream().max(Comparator.comparing(Period::getEffectiveFrom)).orElse(periods.get(0));
+    @JsonProperty("periods")
+    private void unpackNested(List<Map<String, Object>> periods) {
+        if (periods.isEmpty()) {
+            return;
         }
-        return null;
+        Map<String, Object> map = periods.get(0);
+        Map<String, Object> mapRates = (Map<String, Object>) map.get("rates");
+
+        if (mapRates.isEmpty()) {
+            return;
+        }
+        // below can also be the other rates, like super, reduces etc
+        this.standardRate = (Double) mapRates.get("standard");
     }
 
     @Override
@@ -51,11 +60,11 @@ public class VatRate extends AbstractEntity {
         if (o == null || getClass() != o.getClass()) return false;
         VatRate vatRate = (VatRate) o;
         return countryName.equals(vatRate.countryName) &&
-                Objects.equals(periods, vatRate.periods);
+                standardRate.equals(vatRate.standardRate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(countryName, periods);
+        return Objects.hash(countryName, standardRate);
     }
 }

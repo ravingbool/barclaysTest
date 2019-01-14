@@ -4,6 +4,7 @@ import home.barclays.euvattest.domain.RateType;
 import home.barclays.euvattest.domain.VatRate;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The service layer. Implements a business logic
@@ -13,12 +14,11 @@ import java.util.List;
 public interface VatRateService {
 
     /**
-     * @return the particular number of countries with the highest or the lowest VAT rates in EU
+     * @return Countries with the highest or the lowest VAT rates in EU
      *
-     * @param numberOfItemsToShow the number of items which will be shown in list
-     * @param ascending sort the list of countries in ascending order or not
-     * @param rateType a type of rate
+     * @param numberOfCountriesToShow the number of items which will be shown in list
+     * @param ascending sort the list of the EU countries in ascending VAT order or not
+     * @param rateType a type of the rate
      * */
-    List<VatRate> getListOfTheHighestLowestVATCountries(int numberOfItemsToShow, boolean ascending, RateType rateType);
-
+    Map<Double, List<VatRate>> getTheHighestLowestVATCountries(int numberOfCountriesToShow, boolean ascending, RateType rateType);
 }

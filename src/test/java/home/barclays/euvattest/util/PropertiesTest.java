@@ -1,6 +1,5 @@
-package util;
+package home.barclays.euvattest.util;
 
-import home.barclays.euvattest.util.PropertiesUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
